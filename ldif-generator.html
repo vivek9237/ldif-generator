@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDIF Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        select, input {
+            padding: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>LDIF Generator</h1>
+        <div class="form-group">
+            <label for="ldapFlavor">Select LDAP Server Flavor:</label>
+            <select id="ldapFlavor" onchange="updateAttributes()">
+                <option value="activeDirectory">Active Directory</option>
+                <option value="openLDAP">OpenLDAP</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="objectType">Select Object Type:</label>
+            <select id="objectType">
+                <option value="user">User</option>
+                <option value="group">Group</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="numObjects">Number of Objects:</label>
+            <input type="number" id="numObjects" min="1" value="1">
+        </div>
+        <div class="form-group">
+            <label for="baseOU">Base OU:</label>
+            <input type="text" id="baseOU" value="ou=people,dc=mydomain,dc=com">
+        </div>
+        <div class="form-group">
+            <button onclick="generateLDIF()">Generate LDIF</button>
+        </div>
+        <textarea id="ldifOutput" rows="10" cols="50"></textarea>
+    </div>
+
+    <script>
+        function updateAttributes() {
+            var ldapFlavor = document.getElementById('ldapFlavor').value;
+            var objectType = document.getElementById('objectType');
+            objectType.innerHTML = '';
+
+            if (ldapFlavor === 'activeDirectory') {
+                objectType.innerHTML += '<option value="user">User</option>';
+                objectType.innerHTML += '<option value="group">Group</option>';
+            } else if (ldapFlavor === 'openLDAP') {
+                objectType.innerHTML += '<option value="user">User</option>';
+            }
+        }
+
+        function generateLDIF() {
+            var objectType = document.getElementById('objectType').value;
+            var numObjects = parseInt(document.getElementById('numObjects').value, 10);
+            var baseOU = document.getElementById('baseOU').value;
+
+            var ldif = "";
+
+            for (var i = 1; i <= numObjects; i++) {
+                if (objectType === 'user') {
+                    var uid = 'user' + i;
+                    ldif += 'dn: uid=' + uid + ',' + baseOU + '\n';
+                    ldif += 'objectClass: inetOrgPerson\n';
+                    ldif += 'uid: ' + uid + '\n';
+                    ldif += 'cn: ' + uid + '\n\n';
+                } else if (objectType === 'group') {
+                    var cn = 'group' + i;
+                    ldif += 'dn: cn=' + cn + ',' + baseOU + '\n';
+                    ldif += 'objectClass: posixGroup\n';
+                    ldif += 'cn: ' + cn + '\n\n';
+                }
+            }
+
+            document.getElementById('ldifOutput').value = ldif;
+        }
+    </script>
+</body>
+</html>
